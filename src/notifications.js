@@ -73,6 +73,19 @@ Notifications.get = async function (nid) {
 	return Array.isArray(notifications) && notifications.length ? notifications[0] : null;
 };
 
+function cleanPath(notification) {
+	if (notification.path && !notification.path.startsWith('http')) {
+		notification.path = nconf.get('relative_path') + notification.path;
+	}
+	notification.datetimeISO = utils.toISOString(notification.datetime);
+
+	if (notification.bodyLong) {
+		notification.bodyLong = utils.stripHTMLTags(notification.bodyLong, ['img', 'p', 'a']);
+	}
+	console.log('Alice - middle');
+	return notification;
+}
+
 Notifications.getMultiple = async function (nids) {
 	if (!Array.isArray(nids) || !nids.length) {
 		return [];
@@ -84,19 +97,6 @@ Notifications.getMultiple = async function (nids) {
 	const userKeys = notifications.map(n => n && n.from);
 	const usersData = await User.getUsersFields(userKeys, ['username', 'userslug', 'picture']);
 
-	function cleanPath(notification) {
-		if (notification.path && !notification.path.startsWith('http')) {
-			notification.path = nconf.get('relative_path') + notification.path;
-		}
-		notification.datetimeISO = utils.toISOString(notification.datetime);
-
-		if (notification.bodyLong) {
-			notification.bodyLong = utils.stripHTMLTags(notification.bodyLong, ['img', 'p', 'a']);
-		}
-		console.log('Hello Alice - middle');
-		return notification;
-	}
-
 	notifications.forEach((notification, index) => {
 		if (notification) {
 			intFields.forEach((field) => {
@@ -105,15 +105,15 @@ Notifications.getMultiple = async function (nids) {
 				}
 			});
 
-			console.log('Hello Alice - before');
+			console.log('Alice - before');
 			const newNotification = cleanPath(notification);
-			console.log('Hello Alice - after');
+			console.log('Alice - after');
 
 			newNotification.user = usersData[index];
 			if (newNotification.user && newNotification.from) {
 				newNotification.image = newNotification.user.picture || null;
 				if (newNotification.user.username === '[[global:guest]]') {
-					newNotification.bodyShort = newNotification.bodyShort.replace(/([^,]*),[^,]*,([^,]*)/, '$1, [[global:guest]], $2');
+					newNotification.bodyShort = newNotification.bodyShort.replace(/([\s\S]*?),[\s\S]*?,([\s\S]*?)/, '$1, [[global:guest]], $2');
 				}
 			} else if (newNotification.image === 'brand:logo' || !newNotification.image) {
 				newNotification.image = meta.config['brand:logo'] || `${nconf.get('relative_path')}/logo.png`;
