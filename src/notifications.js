@@ -113,7 +113,7 @@ Notifications.getMultiple = async function (nids) {
 			if (newNotification.user && newNotification.from) {
 				newNotification.image = newNotification.user.picture || null;
 				if (newNotification.user.username === '[[global:guest]]') {
-					newNotification.bodyShort = newNotification.bodyShort.replace(/([\s\S]*?),[\s\S]*?,([\s\S]*?)/, '$1, [[global:guest]], $2');
+					newNotification.bodyShort = newNotification.bodyShort.replace(/([^,]*),[^,]*,([^,]*)/, '$1, [[global:guest]], $2');
 				}
 			} else if (newNotification.image === 'brand:logo' || !newNotification.image) {
 				newNotification.image = meta.config['brand:logo'] || `${nconf.get('relative_path')}/logo.png`;
